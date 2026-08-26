@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   // Глобальные переменные
+    const SESSION_KEY = 'userSession';
+    
     let currentUser = null;          // { type: 'teacher' } или { type: 'student', data: {...} }
     let selectedStudentId = null;    // для преподавателя
     let currentMonth = new Date().getMonth();
@@ -79,26 +81,93 @@ document.addEventListener('DOMContentLoaded', function () {
       const login = document.getElementById('login-input').value.trim();
       const password = document.getElementById('password-input').value.trim();
       showLoginError('');
-
+    
       if (login === 'admin' && password === 'admin') {
         currentUser = { type: 'teacher' };
+        saveSession({ type: 'teacher' });
         enterTeacherMode();
         return;
       }
-
-      // Проверка ученика
+    
       const students = await fetchStudents();
       const student = students.find(s => s.login === login && s.password === password);
       if (student) {
         currentUser = { type: 'student', data: student };
+        saveSession({ type: 'student', studentId: student.id });
         enterStudentMode(student);
       } else {
         showLoginError('Неверный логин или пароль');
       }
     });
 
+  document.getElementById('register-btn').addEventListener('click', async () => {
+    const fullName = document.getElementById('reg-fullname').value.trim();
+    const login = document.getElementById('reg-login').value.trim();
+    const password = document.getElementById('reg-password').value.trim();
+    showRegisterError('');
+  
+    if (!fullName || !login || !password) {
+      showRegisterError('Заполните все поля');
+      return;
+    }
+  
+    const students = await fetchStudents();
+    if (students.some(s => s.login === login)) {
+      showRegisterError('Логин уже занят');
+      return;
+    }
+    if (login === 'admin') {
+      showRegisterError('Логин зарезервирован');
+      return;
+    }
+  
+    const newStudentRef = database.ref('students').push();
+    const newStudent = {
+      fullName,
+      login,
+      password,
+      avatarUrl: '' // или заглушка
+    };
+    await newStudentRef.set(newStudent);
+  
+    const studentData = { id: newStudentRef.key, ...newStudent };
+    currentUser = { type: 'student', data: studentData };
+    saveSession({ type: 'student', studentId: studentData.id });
+    enterStudentMode(studentData);
+  });
+
+  document.getElementById('show-register').addEventListener('click', () => {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('register-screen').classList.remove('hidden');
+    document.getElementById('login-error').textContent = '';
+    document.getElementById('register-error').textContent = '';
+  });
+  
+  document.getElementById('show-login').addEventListener('click', () => {
+    document.getElementById('register-screen').classList.add('hidden');
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('login-error').textContent = '';
+    document.getElementById('register-error').textContent = '';
+  });
+
+  function logout() {
+    clearSession();
+    currentUser = null;
+    document.getElementById('teacher-panel').classList.add('hidden');
+    document.getElementById('student-panel').classList.add('hidden');
+    document.getElementById('register-screen').classList.add('hidden');
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('login-input').value = '';
+    document.getElementById('password-input').value = '';
+    showLoginError('');
+  }
+  
+  document.getElementById('teacher-logout').addEventListener('click', logout);
+  document.getElementById('student-logout').addEventListener('click', logout);
+
     function enterTeacherMode() {
       document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('register-screen').classList.add('hidden');
       document.getElementById('teacher-panel').classList.remove('hidden');
       document.getElementById('student-panel').classList.add('hidden');
       renderTeacherInterface();
@@ -106,6 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function enterStudentMode(student) {
       document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('register-screen').classList.add('hidden');
       document.getElementById('teacher-panel').classList.add('hidden');
       document.getElementById('student-panel').classList.remove('hidden');
       document.getElementById('student-name').textContent = student.fullName;
@@ -408,7 +478,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Инициализация
     (async () => {
-      await fetchStudents(); // кэшируем
-      // Показываем экран входа
+      await fetchStudents(); // кэшируем список студентов
+      const session = loadSession();
+      if (!session) return;
+    
+      if (session.type === 'teacher') {
+        currentUser = { type: 'teacher' };
+        enterTeacherMode();
+      } else if (session.type === 'student' && session.studentId) {
+        const student = allStudents.find(s => s.id === session.studentId);
+        if (student) {
+          currentUser = { type: 'student', data: student };
+          enterStudentMode(student);
+        } else {
+          clearSession();
+        }
+      }
     })();
+
+    function saveSession(sessionData) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+    }
+    
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+    }
+    
+    function loadSession() {
+      const data = localStorage.getItem(SESSION_KEY);
+      if (!data) return null;
+      try {
+        return JSON.parse(data);
+      } catch {
+        return null;
+      }
+    }
 });
