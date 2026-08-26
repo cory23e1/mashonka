@@ -16,7 +16,61 @@
   </head>
   
   <body>
- 
-  </body>
+    <!-- Экран входа -->
+    <div id="login-screen">
+      <div class="login-card">
+        <h2>Вход</h2>
+        <input type="text" id="login-input" placeholder="Логин">
+        <input type="password" id="password-input" placeholder="Пароль">
+        <button id="login-btn">Войти</button>
+        <div class="error" id="login-error"></div>
+      </div>
+    </div>
   
+    <!-- Панель преподавателя -->
+    <div id="teacher-panel" class="hidden">
+      <div class="left-panel">
+        <h3 style="margin-bottom:20px;">Ученики</h3>
+        <div id="students-list"></div>
+        <div id="student-dates" class="hidden"></div>
+      </div>
+      <div class="right-panel">
+        <h2>Кабинет преподавателя</h2>
+        <div id="today-activity" style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+          <h4>Активность на сегодня</h4>
+          <div id="today-lessons"></div>
+        </div>
+        <h3 id="calendar-title"></h3>
+        <div id="calendar" class="calendar"></div>
+      </div>
+    </div>
+  
+    <!-- Панель ученика -->
+    <div id="student-panel" class="hidden">
+      <div class="student-header">
+        <div>
+          <div class="name" id="student-name"></div>
+        </div>
+        <img id="student-avatar" src="" alt="Аватар">
+      </div>
+      <div class="upcoming-lessons">
+        <h3 style="text-align:center; margin-bottom:20px;">Ближайшие занятия</h3>
+        <div id="student-lessons"></div>
+      </div>
+    </div>
+  
+    <!-- Модальное окно для уроков на выбранную дату -->
+    <div id="modal" class="modal hidden">
+      <div class="modal-content">
+        <h3 id="modal-date"></h3>
+        <div id="modal-lessons"></div>
+        <button onclick="closeModal()" style="margin-top:15px; padding:8px 20px; background:#e74c3c; color:white; border:none; border-radius:5px; cursor:pointer;">Закрыть</button>
+      </div>
+    </div>
+  
+    <!-- Контейнер для уведомлений -->
+    <div id="toast-container">
+    </div>
+    
+  </body>
 </html>
