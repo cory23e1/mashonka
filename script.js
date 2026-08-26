@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentYear = new Date().getFullYear();
     let allStudents = [];            // кэш списка учеников
 
+    //Биндинг функций к кнопкам
+    document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+
     // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
     function showLoginError(msg) {
       document.getElementById('login-error').textContent = msg;
