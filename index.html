@@ -4,8 +4,162 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="firebase.js"></script>
   
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Страница препода</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  
   <body>
-    <h1>Привет, дебил!</h1>  
+
+    <div class="page">
+
+        <!-- Заголовок -->
+        <h1 class="page-title">Страница препода</h1>
+
+        <!-- Ученики -->
+        <div class="section-label">Ученики</div>
+        <div class="students-grid">
+
+            <!-- Васьков -->
+            <div class="student-card">
+                <div class="student-name">Васьков Васек Васильевич</div>
+                <div class="student-tags">
+                    <span class="tag tag-dz"><i class="fas fa-book-open"></i> Д/З</span>
+                    <span class="tag tag-zoom"><i class="fas fa-video"></i> Zoom</span>
+                </div>
+            </div>
+
+            <!-- Попкова -->
+            <div class="student-card">
+                <div class="student-name">Попкова Попкова Попковна</div>
+                <div class="student-tags">
+                    <span class="tag tag-dz"><i class="fas fa-book-open"></i> Д/З</span>
+                    <span class="tag tag-zoom"><i class="fas fa-video"></i> Zoom</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Примечание -->
+        <div class="notes-block">
+            <div class="notes-header">
+                <span class="section-label">Примечание</span>
+            </div>
+
+            <div class="notes-files">
+                <span class="file-item"><i class="fas fa-file-pdf pdf"></i> книжка1.pdf</span>
+                <span class="file-item"><i class="fas fa-file-pdf pdf"></i> книжка2.pdf</span>
+                <span class="file-item"><i class="fas fa-file-word docx"></i> задание1.docx</span>
+            </div>
+
+            <div class="notes-zoom-row">
+                <span class="zoom-badge"><i class="fas fa-video"></i> Zoom</span>
+                <span class="zoom-date">27.08.2026</span>
+                <a href="#" class="zoom-link">https://zoom.us/j/123456789</a>
+            </div>
+        </div>
+
+        <!-- Мария Носачева -->
+        <div class="maria-block">
+            <div class="maria-left">
+                <span class="maria-name">Мария Носачева</span>
+                <span class="maria-date">среда 26.08.2026</span>
+            </div>
+            <span class="maria-avatar-tag"><i class="fas fa-user-circle"></i> Аватарка</span>
+        </div>
+
+        <!-- Дата + статус -->
+        <div class="date-status">
+            <div class="selected-date">
+                <span>Выбрано:</span> 11.08.2026
+            </div>
+            <span class="status-badge"><i class="far fa-calendar-alt" style="margin-right:6px;"></i>Сегодня нет активностей</span>
+        </div>
+
+        <!-- Календарь -->
+        <div class="calendar-wrapper">
+            <table class="calendar-grid">
+                <thead>
+                    <tr>
+                        <th>Пн</th>
+                        <th>Вт</th>
+                        <th>Ср</th>
+                        <th>Чт</th>
+                        <th>Пт</th>
+                        <th>Сб</th>
+                        <th>Вс</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Строка 1: 27..2 -->
+                    <tr>
+                        <td class="other-month">27</td>
+                        <td class="other-month">28</td>
+                        <td class="other-month">29</td>
+                        <td class="other-month">30</td>
+                        <td class="other-month">31</td>
+                        <td>1</td>
+                        <td>2</td>
+                    </tr>
+                    <!-- Строка 2: 3..9 -->
+                    <tr>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>6</td>
+                        <td>7</td>
+                        <td>8</td>
+                        <td>9</td>
+                    </tr>
+                    <!-- Строка 3: 10..16 -->
+                    <tr>
+                        <td>10</td>
+                        <td class="today">11</td>
+                        <td>12</td>
+                        <td>13</td>
+                        <td>14</td>
+                        <td>15</td>
+                        <td>16</td>
+                    </tr>
+                    <!-- Строка 4: 17..23 -->
+                    <tr>
+                        <td>17</td>
+                        <td>18</td>
+                        <td>19</td>
+                        <td>20</td>
+                        <td>21</td>
+                        <td>22</td>
+                        <td>23</td>
+                    </tr>
+                    <!-- Строка 5: 24..30 -->
+                    <tr>
+                        <td>24</td>
+                        <td>25</td>
+                        <td>26</td>
+                        <td>27</td>
+                        <td>28</td>
+                        <td>29</td>
+                        <td>30</td>
+                    </tr>
+                    <!-- Строка 6: 31..6 -->
+                    <tr>
+                        <td>31</td>
+                        <td class="other-month">1</td>
+                        <td class="other-month">2</td>
+                        <td class="other-month">3</td>
+                        <td class="other-month">4</td>
+                        <td class="other-month">5</td>
+                        <td class="other-month">6</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    
   </body>
   
 </html>
