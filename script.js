@@ -49,9 +49,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function fetchLessonsForStudent(studentId) {
-      const snapshot = await database.ref('lessons').orderByChild('studentId').equalTo(studentId).once('value');
+      const snapshot = await database.ref('lessons').once('value');
       const lessons = [];
-      snapshot.forEach(child => lessons.push({ id: child.key, ...child.val() }));
+      snapshot.forEach(child => {
+        const lesson = child.val();
+        if (lesson.studentId === studentId) {
+          lessons.push({ id: child.key, ...lesson });
+        }
+      });
+      console.log(`Найдено уроков для ${studentId}:`, lessons.length, lessons); // для отладки
       return lessons;
     }
 
