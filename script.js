@@ -1,3 +1,411 @@
 document.addEventListener('DOMContentLoaded', function () {
+  // Глобальные переменные
+    let currentUser = null;          // { type: 'teacher' } или { type: 'student', data: {...} }
+    let selectedStudentId = null;    // для преподавателя
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    let allStudents = [];            // кэш списка учеников
 
+    // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+    function showLoginError(msg) {
+      document.getElementById('login-error').textContent = msg;
+    }
+
+    function formatDate(date) {
+      const d = date.getDate().toString().padStart(2, '0');
+      const m = (date.getMonth() + 1).toString().padStart(2, '0');
+      const y = date.getFullYear();
+      return `${d}.${m}.${y}`;
+    }
+
+    function parseDate(str) {
+      const parts = str.split('.');
+      return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    }
+
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+
+    // ==================== ЗАГРУЗКА ДАННЫХ ИЗ БД ====================
+    async function fetchStudents() {
+      const snapshot = await database.ref('students').once('value');
+      const students = [];
+      snapshot.forEach(child => {
+        students.push({ id: child.key, ...child.val() });
+      });
+      allStudents = students;
+      return students;
+    }
+
+    async function fetchLessonsForStudent(studentId) {
+      const snapshot = await database.ref('lessons').orderByChild('studentId').equalTo(studentId).once('value');
+      const lessons = [];
+      snapshot.forEach(child => lessons.push({ id: child.key, ...child.val() }));
+      return lessons;
+    }
+
+    async function fetchLessonsForDate(dateStr) {
+      const snapshot = await database.ref('lessons').orderByChild('date').equalTo(dateStr).once('value');
+      const lessons = [];
+      snapshot.forEach(child => lessons.push({ id: child.key, ...child.val() }));
+      return lessons;
+    }
+
+    async function fetchAllLessons() {
+      const snapshot = await database.ref('lessons').once('value');
+      const lessons = [];
+      snapshot.forEach(child => lessons.push({ id: child.key, ...child.val() }));
+      return lessons;
+    }
+
+    // Загрузка файла домашнего задания в Firebase Storage
+    async function uploadHomeworkFile(file) {
+      const storageRef = storage.ref(`homework/${Date.now()}_${file.name}`);
+      await storageRef.put(file);
+      return await storageRef.getDownloadURL();
+    }
+
+    // ==================== АУТЕНТИФИКАЦИЯ ====================
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const login = document.getElementById('login-input').value.trim();
+      const password = document.getElementById('password-input').value.trim();
+      showLoginError('');
+
+      if (login === 'admin' && password === 'admin') {
+        currentUser = { type: 'teacher' };
+        enterTeacherMode();
+        return;
+      }
+
+      // Проверка ученика
+      const students = await fetchStudents();
+      const student = students.find(s => s.login === login && s.password === password);
+      if (student) {
+        currentUser = { type: 'student', data: student };
+        enterStudentMode(student);
+      } else {
+        showLoginError('Неверный логин или пароль');
+      }
+    });
+
+    function enterTeacherMode() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('teacher-panel').classList.remove('hidden');
+      document.getElementById('student-panel').classList.add('hidden');
+      renderTeacherInterface();
+    }
+
+    function enterStudentMode(student) {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('teacher-panel').classList.add('hidden');
+      document.getElementById('student-panel').classList.remove('hidden');
+      document.getElementById('student-name').textContent = student.fullName;
+      document.getElementById('student-avatar').src = student.avatarUrl || 'https://via.placeholder.com/60';
+      renderStudentLessons(student.id);
+    }
+
+    // ==================== ИНТЕРФЕЙС ПРЕПОДАВАТЕЛЯ ====================
+    async function renderTeacherInterface() {
+      await renderStudentsList();
+      renderCalendar(currentYear, currentMonth);
+      renderTodayActivity();
+      checkTodayNotifications();
+    }
+
+    async function renderStudentsList() {
+      const container = document.getElementById('students-list');
+      container.innerHTML = '';
+      const students = await fetchStudents();
+      students.forEach(student => {
+        const div = document.createElement('div');
+        div.className = 'student-card';
+        div.innerHTML = `
+          <img src="${student.avatarUrl || 'https://via.placeholder.com/40'}" alt="avatar">
+          <span>${student.fullName}</span>
+        `;
+        div.addEventListener('click', () => onStudentClick(student));
+        container.appendChild(div);
+      });
+    }
+
+    async function onStudentClick(student) {
+      selectedStudentId = student.id;
+      const datesDiv = document.getElementById('student-dates');
+      datesDiv.classList.remove('hidden');
+      datesDiv.innerHTML = `<h4>${student.fullName}</h4>`;
+      
+      const lessons = await fetchLessonsForStudent(student.id);
+      const dates = [...new Set(lessons.map(l => l.date))].sort((a,b) => parseDate(a) - parseDate(b));
+      
+      dates.forEach(date => {
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'date-item';
+        dateDiv.textContent = date;
+        dateDiv.addEventListener('click', () => showLessonForm(student.id, date, lessons.find(l => l.date === date)));
+        datesDiv.appendChild(dateDiv);
+      });
+
+      // Кнопка добавления новой даты
+      const addBtn = document.createElement('button');
+      addBtn.textContent = '+ Добавить дату';
+      addBtn.style.cssText = 'margin-top:10px; padding:8px; background:#3498db; color:white; border:none; border-radius:5px; cursor:pointer;';
+      addBtn.addEventListener('click', () => {
+        const newDate = prompt('Введите дату в формате ДД.ММ.ГГГГ:');
+        if (newDate && /^\d{2}\.\d{2}\.\d{4}$/.test(newDate)) {
+          showLessonForm(student.id, newDate, null);
+        } else if (newDate) {
+          alert('Неверный формат даты');
+        }
+      });
+      datesDiv.appendChild(addBtn);
+    }
+
+    function showLessonForm(studentId, date, existingLesson) {
+      const datesDiv = document.getElementById('student-dates');
+      // Удаляем предыдущую форму, если есть
+      const oldForm = datesDiv.querySelector('.lesson-form');
+      if (oldForm) oldForm.remove();
+
+      const form = document.createElement('div');
+      form.className = 'lesson-form';
+      form.innerHTML = `
+        <h4>${date}</h4>
+        <input type="time" id="lesson-time" value="${existingLesson?.time || ''}" placeholder="Время (ЧЧ:ММ)">
+        <input type="text" id="lesson-zoom" value="${existingLesson?.zoomLink || ''}" placeholder="Ссылка на Zoom">
+        <input type="file" id="lesson-file">
+        <textarea id="lesson-comment" placeholder="Комментарий к домашнему заданию">${existingLesson?.homework?.comment || ''}</textarea>
+        <button id="save-lesson">Сохранить</button>
+        ${existingLesson ? `<button id="delete-lesson" style="background:#e74c3c;">Удалить урок</button>` : ''}
+      `;
+      datesDiv.appendChild(form);
+
+      document.getElementById('save-lesson').addEventListener('click', async () => {
+        const time = document.getElementById('lesson-time').value;
+        const zoomLink = document.getElementById('lesson-zoom').value;
+        const fileInput = document.getElementById('lesson-file');
+        const comment = document.getElementById('lesson-comment').value;
+
+        let homeworkData = existingLesson?.homework || {};
+        if (fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          const fileUrl = await uploadHomeworkFile(file);
+          homeworkData = { fileName: file.name, fileUrl, comment };
+        } else if (comment !== (existingLesson?.homework?.comment || '')) {
+          homeworkData = { ...homeworkData, comment };
+        }
+
+        const lessonData = {
+          studentId,
+          date,
+          time,
+          zoomLink,
+          homework: homeworkData
+        };
+
+        if (existingLesson) {
+          await database.ref(`lessons/${existingLesson.id}`).update(lessonData);
+        } else {
+          await database.ref('lessons').push(lessonData);
+        }
+        alert('Урок сохранён');
+        onStudentClick(allStudents.find(s => s.id === studentId));
+        renderCalendar(currentYear, currentMonth);
+        renderTodayActivity();
+      });
+
+      if (existingLesson) {
+        document.getElementById('delete-lesson').addEventListener('click', async () => {
+          if (confirm('Удалить этот урок?')) {
+            await database.ref(`lessons/${existingLesson.id}`).remove();
+            alert('Урок удалён');
+            onStudentClick(allStudents.find(s => s.id === studentId));
+            renderCalendar(currentYear, currentMonth);
+            renderTodayActivity();
+          }
+        });
+      }
+    }
+
+    // ==================== КАЛЕНДАРЬ ====================
+    function renderCalendar(year, month) {
+      const container = document.getElementById('calendar');
+      container.innerHTML = '';
+      document.getElementById('calendar-title').textContent = new Date(year, month).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+
+      const firstDay = new Date(year, month, 1).getDay(); // 0 - вс, 1 - пн ...
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+      // Пустые ячейки предыдущего месяца
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const day = document.createElement('div');
+        day.className = 'day other-month';
+        day.textContent = daysInPrevMonth - i;
+        container.appendChild(day);
+      }
+
+      const todayStr = formatDate(new Date());
+
+      // Дни текущего месяца
+      for (let d = 1; d <= daysInMonth; d++) {
+        const day = document.createElement('div');
+        day.className = 'day';
+        day.textContent = d;
+        const dateStr = `${d.toString().padStart(2,'0')}.${(month+1).toString().padStart(2,'0')}.${year}`;
+        day.dataset.date = dateStr;
+        if (dateStr === todayStr) day.classList.add('today');
+        container.appendChild(day);
+      }
+
+      // Заполняем оставшиеся ячейки следующего месяца
+      const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+      for (let i = firstDay + daysInMonth; i < totalCells; i++) {
+        const day = document.createElement('div');
+        day.className = 'day other-month';
+        day.textContent = i - firstDay - daysInMonth + 1;
+        container.appendChild(day);
+      }
+
+      // Отмечаем дни, где есть уроки
+      fetchAllLessons().then(lessons => {
+        const datesWithLessons = new Set(lessons.map(l => l.date));
+        document.querySelectorAll('.day:not(.other-month)').forEach(day => {
+          if (datesWithLessons.has(day.dataset.date)) {
+            day.classList.add('has-lessons');
+          }
+          day.addEventListener('click', () => showLessonsForDate(day.dataset.date));
+        });
+      });
+    }
+
+    async function showLessonsForDate(dateStr) {
+      const lessons = await fetchLessonsForDate(dateStr);
+      const modal = document.getElementById('modal');
+      const modalDate = document.getElementById('modal-date');
+      const modalLessons = document.getElementById('modal-lessons');
+      modalDate.textContent = `Занятия на ${dateStr}`;
+      modalLessons.innerHTML = '';
+      
+      if (lessons.length === 0) {
+        modalLessons.innerHTML = '<p>Нет занятий</p>';
+      } else {
+        for (const lesson of lessons) {
+          const student = allStudents.find(s => s.id === lesson.studentId);
+          const div = document.createElement('div');
+          div.className = 'lesson-entry';
+          div.innerHTML = `
+            <strong>${student?.fullName || 'Неизвестный ученик'}</strong> — ${lesson.time || 'время не указано'}
+            ${lesson.zoomLink ? `<br><a href="${lesson.zoomLink}" target="_blank">Zoom</a>` : ''}
+          `;
+          modalLessons.appendChild(div);
+        }
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    // ==================== АКТИВНОСТЬ НА СЕГОДНЯ ====================
+    async function renderTodayActivity() {
+      const todayStr = formatDate(new Date());
+      const lessons = await fetchLessonsForDate(todayStr);
+      const container = document.getElementById('today-lessons');
+      container.innerHTML = '';
+      if (lessons.length === 0) {
+        container.innerHTML = '<p>На сегодня встреч нет</p>';
+      } else {
+        for (const lesson of lessons) {
+          const student = allStudents.find(s => s.id === lesson.studentId);
+          const div = document.createElement('div');
+          div.style.marginBottom = '5px';
+          div.innerHTML = `${student?.fullName || 'Ученик'} — ${lesson.time} ${lesson.zoomLink ? `(<a href="${lesson.zoomLink}" target="_blank">Zoom</a>)` : ''}`;
+          container.appendChild(div);
+        }
+      }
+    }
+
+    // ==================== КАБИНЕТ УЧЕНИКА ====================
+    async function renderStudentLessons(studentId) {
+      const lessons = await fetchLessonsForStudent(studentId);
+      const todayStr = formatDate(new Date());
+      const upcoming = lessons
+        .filter(l => parseDate(l.date) >= parseDate(todayStr))
+        .sort((a,b) => parseDate(a.date) - parseDate(b.date));
+      
+      const container = document.getElementById('student-lessons');
+      container.innerHTML = '';
+      if (upcoming.length === 0) {
+        container.innerHTML = '<p>Нет предстоящих занятий</p>';
+      } else {
+        upcoming.forEach(lesson => {
+          const card = document.createElement('div');
+          card.className = 'lesson-card';
+          card.innerHTML = `
+            <h4>${lesson.date} в ${lesson.time || 'не указано'}</h4>
+            ${lesson.zoomLink ? `<p>Zoom: <a href="${lesson.zoomLink}" target="_blank">${lesson.zoomLink}</a></p>` : ''}
+            <div class="homework">
+              <strong>Домашнее задание:</strong><br>
+              ${lesson.homework?.fileName ? `<a href="${lesson.homework.fileUrl}" target="_blank">${lesson.homework.fileName}</a>` : 'Нет файла'}
+              ${lesson.homework?.comment ? `<p>Комментарий: ${lesson.homework.comment}</p>` : ''}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      }
+    }
+
+    // ==================== УВЕДОМЛЕНИЯ ====================
+    async function checkTodayNotifications() {
+      const todayStr = formatDate(new Date());
+      const lessons = await fetchLessonsForDate(todayStr);
+      if (lessons.length > 0) {
+        if (currentUser.type === 'teacher') {
+          const names = lessons.map(l => allStudents.find(s => s.id === l.studentId)?.fullName || 'ученик').join(', ');
+          showToast(`Сегодня у вас ${lessons.length} встреч(и): ${names}`);
+        } else {
+          const studentLessons = lessons.filter(l => l.studentId === currentUser.data.id);
+          if (studentLessons.length > 0) {
+            showToast(`У вас сегодня занятие в ${studentLessons[0].time || 'назначенное время'}`);
+          }
+        }
+      }
+    }
+
+    // Периодическая проверка уведомлений (раз в минуту)
+    setInterval(() => {
+      if (currentUser) checkTodayNotifications();
+    }, 60000);
+
+    // ==================== ПЕРЕКЛЮЧЕНИЕ МЕСЯЦЕВ (опционально) ====================
+    // Добавим кнопки навигации по календарю
+    document.querySelector('.right-panel').insertAdjacentHTML('afterbegin', `
+      <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <button id="prev-month" style="padding:5px 10px;">←</button>
+        <button id="next-month" style="padding:5px 10px;">→</button>
+      </div>
+    `);
+    document.getElementById('prev-month').addEventListener('click', () => {
+      currentMonth--;
+      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      renderCalendar(currentYear, currentMonth);
+    });
+    document.getElementById('next-month').addEventListener('click', () => {
+      currentMonth++;
+      if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+      renderCalendar(currentYear, currentMonth);
+    });
+
+    // Инициализация
+    (async () => {
+      await fetchStudents(); // кэшируем
+      // Показываем экран входа
+    })();
 });
