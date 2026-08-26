@@ -136,6 +136,10 @@ document.addEventListener('DOMContentLoaded', function () {
     enterStudentMode(studentData);
   });
 
+  function showRegisterError(msg) {
+    document.getElementById('register-error').textContent = msg;
+  }
+
   document.getElementById('show-register').addEventListener('click', () => {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('register-screen').classList.remove('hidden');
