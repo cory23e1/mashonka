@@ -62,9 +62,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function fetchLessonsForDate(dateStr) {
-      const snapshot = await database.ref('lessons').orderByChild('date').equalTo(dateStr).once('value');
+      const snapshot = await database.ref('lessons').once('value');
       const lessons = [];
-      snapshot.forEach(child => lessons.push({ id: child.key, ...child.val() }));
+      snapshot.forEach(child => {
+        const lesson = child.val();
+        if (lesson.date === dateStr) {
+          lessons.push({ id: child.key, ...lesson });
+        }
+      });
       return lessons;
     }
 
@@ -72,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const snapshot = await database.ref('lessons').once('value');
       const lessons = [];
       snapshot.forEach(child => lessons.push({ id: child.key, ...child.val() }));
+      console.log('Все уроки:', lessons.length, lessons); // для отладки
       return lessons;
     }
 
