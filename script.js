@@ -218,6 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
       datesDiv.innerHTML = `<h4>${student.fullName}</h4>`;
       
       const lessons = await fetchLessonsForStudent(student.id);
+      console.log('Загружено уроков:', lessons.length, lessons);
       const dates = [...new Set(lessons.map(l => l.date))].sort((a,b) => parseDate(a) - parseDate(b));
       
       dates.forEach(date => {
