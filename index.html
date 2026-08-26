@@ -24,27 +24,94 @@
 
         <!-- Ученики -->
         <div class="section-label">Ученики</div>
-        <div class="students-grid">
 
-            <!-- Васьков -->
-            <div class="student-card">
-                <div class="student-name">Васьков Васек Васильевич</div>
-                <div class="student-tags">
-                    <span class="tag tag-dz"><i class="fas fa-book-open"></i> Д/З</span>
-                    <span class="tag tag-zoom"><i class="fas fa-video"></i> Zoom</span>
-                </div>
+      <div class="students-grid">
+
+        <!-- Карточка ученика 1: Васьков -->
+        <div class="student-card" data-student="vaskov">
+          <div class="student-card-header">
+            <div class="student-name">Васьков Васек Васильевич</div>
+            <div class="student-tags">
+              <span class="tag tag-dz"><i class="fas fa-book-open"></i> Д/З</span>
+              <span class="tag tag-zoom"><i class="fas fa-video"></i> Zoom</span>
             </div>
-
-            <!-- Попкова -->
-            <div class="student-card">
-                <div class="student-name">Попкова Попкова Попковна</div>
-                <div class="student-tags">
-                    <span class="tag tag-dz"><i class="fas fa-book-open"></i> Д/З</span>
-                    <span class="tag tag-zoom"><i class="fas fa-video"></i> Zoom</span>
-                </div>
+          </div>
+          <div class="student-panel">
+            <!-- Таблица ДЗ -->
+            <table class="hw-table" id="hw-vaskov">
+              <thead>
+                <tr>
+                  <th style="width:45%;">Файл</th>
+                  <th style="width:55%;">Комментарий</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr class="upload-row">
+                  <td colspan="2">
+                    <div class="upload-cell">
+                      <label for="fileInput-vaskov">
+                        <i class="fas fa-upload"></i> Загрузить файл
+                      </label>
+                      <input type="file" id="fileInput-vaskov" accept=".pdf,.doc,.docx,.txt,.jpg,.png" />
+                      <span class="file-status" id="status-vaskov"></span>
+                    </div>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+            <!-- Zoom строка -->
+            <div class="zoom-row">
+              <label><i class="fas fa-video"></i> Zoom ссылка</label>
+              <input type="text" placeholder="Вставьте ссылку на Zoom..." id="zoomInput-vaskov" />
+              <button class="zoom-save" data-student="vaskov">Сохранить</button>
+              <span class="zoom-link-display" id="zoomDisplay-vaskov"></span>
             </div>
-
+          </div>
         </div>
+      
+        <!-- Карточка ученика 2: Попкова -->
+        <div class="student-card" data-student="popkova">
+          <div class="student-card-header">
+            <div class="student-name">Попкова Попкова Попковна</div>
+            <div class="student-tags">
+              <span class="tag tag-dz"><i class="fas fa-book-open"></i> Д/З</span>
+              <span class="tag tag-zoom"><i class="fas fa-video"></i> Zoom</span>
+            </div>
+          </div>
+          <div class="student-panel">
+            <table class="hw-table" id="hw-popkova">
+              <thead>
+                <tr>
+                  <th style="width:45%;">Файл</th>
+                  <th style="width:55%;">Комментарий</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr class="upload-row">
+                  <td colspan="2">
+                    <div class="upload-cell">
+                      <label for="fileInput-popkova">
+                        <i class="fas fa-upload"></i> Загрузить файл
+                      </label>
+                      <input type="file" id="fileInput-popkova" accept=".pdf,.doc,.docx,.txt,.jpg,.png" />
+                      <span class="file-status" id="status-popkova"></span>
+                    </div>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+            <div class="zoom-row">
+              <label><i class="fas fa-video"></i> Zoom ссылка</label>
+              <input type="text" placeholder="Вставьте ссылку на Zoom..." id="zoomInput-popkova" />
+              <button class="zoom-save" data-student="popkova">Сохранить</button>
+              <span class="zoom-link-display" id="zoomDisplay-popkova"></span>
+            </div>
+          </div>
+        </div>
+      
+      </div>
 
         <!-- Примечание -->
         <div class="notes-block">
