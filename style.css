@@ -341,6 +341,195 @@ body {
     background: transparent;
 }
 
+.student-panel {
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 16px 18px 18px;
+  display: none;
+}
+.student-card.expanded .student-panel {
+  display: block;
+}
+
+/* Таблица ДЗ */
+.hw-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.hw-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  padding: 4px 6px 8px 6px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+.hw-table td {
+  padding: 6px 6px 10px 6px;
+  vertical-align: top;
+  border-bottom: 1px solid #f1f4f9;
+}
+.hw-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Ячейка с файлом */
+.file-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.file-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f4f9;
+  padding: 2px 12px 2px 8px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+.file-name i {
+  color: #2563eb;
+  font-size: 14px;
+}
+.file-name .pdf {
+  color: #dc2626;
+}
+.file-name .docx {
+  color: #2563eb;
+}
+.file-remove {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  transition: color 0.2s;
+}
+.file-remove:hover {
+  color: #dc2626;
+}
+
+/* Комментарий */
+.comment-cell textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+  background: #fafcff;
+  transition: border 0.2s;
+}
+.comment-cell textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Строка загрузки */
+.upload-row td {
+  padding-top: 12px;
+  border-top: 1px dashed #d1d9e6;
+}
+.upload-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.upload-cell label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eef2f6;
+  padding: 6px 16px 6px 12px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.upload-cell label:hover {
+  background: #dbeafe;
+}
+.upload-cell label i {
+  color: #2563eb;
+}
+.upload-cell input[type="file"] {
+  display: none;
+}
+.upload-cell .file-status {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Zoom строка */
+.zoom-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 6px;
+}
+.zoom-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #0b5e7a;
+  font-size: 14px;
+}
+.zoom-row label i {
+  color: #0b7a9c;
+}
+.zoom-row input[type="text"] {
+  flex: 1;
+  min-width: 180px;
+  padding: 6px 14px;
+  border-radius: 30px;
+  border: 1px solid #e2e8f0;
+  font-size: 13px;
+  background: #fafcff;
+  transition: border 0.2s;
+}
+.zoom-row input[type="text"]:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.zoom-row .zoom-save {
+  background: #2563eb;
+  border: none;
+  color: #fff;
+  padding: 6px 18px;
+  border-radius: 30px;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.zoom-row .zoom-save:hover {
+  background: #1d4ed8;
+}
+.zoom-link-display {
+  font-size: 13px;
+  color: #2563eb;
+  word-break: break-all;
+}
+
+
 /* small screens */
 @media (max-width: 640px) {
     .page {
@@ -375,6 +564,23 @@ body {
     .calendar-grid td {
         padding: 4px 2px;
     }
+
+      .hw-table {
+        font-size: 13px;
+      }
+      .hw-table td {
+        padding: 4px 4px 8px;
+      }
+      .file-cell {
+        flex-wrap: wrap;
+      }
+      .zoom-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .zoom-row input[type="text"] {
+        min-width: auto;
+      }
 }
 
 @media (max-width: 420px) {
