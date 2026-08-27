@@ -494,10 +494,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ==================== ПЕРЕКЛЮЧЕНИЕ МЕСЯЦЕВ (опционально) ====================
     // Добавим кнопки навигации по календарю
-    document.querySelector('.right-panel').insertAdjacentHTML('afterbegin', `
+    document.querySelector('.right-panel').insertAdjacentHTML('beforeend', `
       <div style="display:flex; gap:10px; margin-bottom:10px;">
-        <button id="prev-month" style="padding:5px 10px;">←</button>
-        <button id="next-month" style="padding:5px 10px;">→</button>
+        <button id="prev-month">Пред.месяц</button>
+        <button id="next-month">След.месяц</button>
       </div>
     `);
     document.getElementById('prev-month').addEventListener('click', () => {
