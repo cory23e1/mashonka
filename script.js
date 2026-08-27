@@ -85,11 +85,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Загрузка файла домашнего задания в Firebase Storage
-    async function uploadHomeworkFile(file) {
-      const storageRef = storage.ref(`homework/${Date.now()}_${file.name}`);
-      await storageRef.put(file);
-      return await storageRef.getDownloadURL();
-    }
+    // async function uploadHomeworkFile(file) {
+    //   const storageRef = storage.ref(`homework/${Date.now()}_${file.name}`);
+    //   await storageRef.put(file);
+    //   return await storageRef.getDownloadURL();
+    // }
 
     // ==================== АУТЕНТИФИКАЦИЯ ====================
     document.getElementById('login-btn').addEventListener('click', async () => {
@@ -119,6 +119,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const fullName = document.getElementById('reg-fullname').value.trim();
     const login = document.getElementById('reg-login').value.trim();
     const password = document.getElementById('reg-password').value.trim();
+    const avatarFile = document.getElementById('reg-avatar').files[0];
+    let avatarUrl = ''; // или заглушка
+    if (avatarFile) {
+      avatarUrl = await readFileAsDataURL(avatarFile);
+    }
+    
     showRegisterError('');
   
     if (!fullName || !login || !password) {
@@ -141,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
       fullName,
       login,
       password,
-      avatarUrl: '' // или заглушка
+      avatarUrl: avatarUrl || '' // сохраняем data URL
     };
     await newStudentRef.set(newStudent);
   
@@ -150,6 +156,15 @@ document.addEventListener('DOMContentLoaded', function () {
     saveSession({ type: 'student', studentId: studentData.id });
     enterStudentMode(studentData);
   });
+
+  function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
 
   function showRegisterError(msg) {
     document.getElementById('register-error').textContent = msg;
@@ -288,14 +303,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const fileInput = document.getElementById('lesson-file');
         const comment = document.getElementById('lesson-comment').value;
 
-        let homeworkData = existingLesson?.homework || {};
-        if (fileInput.files.length > 0) {
-          const file = fileInput.files[0];
-          const fileUrl = await uploadHomeworkFile(file);
-          homeworkData = { fileName: file.name, fileUrl, comment };
-        } else if (comment !== (existingLesson?.homework?.comment || '')) {
-          homeworkData = { ...homeworkData, comment };
-        }
+      let homeworkData = existingLesson?.homework || {};
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const fileData = await readFileAsDataURL(file);
+        homeworkData = { fileName: file.name, fileUrl: fileData, comment }; // fileUrl теперь data URL
+      } else if (comment !== (existingLesson?.homework?.comment || '')) {
+        homeworkData = { ...homeworkData, comment };
+      }
 
         const lessonData = {
           studentId,
