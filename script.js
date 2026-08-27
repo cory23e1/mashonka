@@ -75,9 +75,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function fetchAllLessons() {
       const snapshot = await database.ref('lessons').once('value');
+      console.log('Сырые данные из lessons:', snapshot.val());  // ← посмотрите, что реально лежит в базе
       const lessons = [];
-      snapshot.forEach(child => lessons.push({ id: child.key, ...child.val() }));
-      console.log('Все уроки:', lessons.length, lessons); // для отладки
+      snapshot.forEach(child => {
+        console.log('Ребёнок:', child.key, child.val());
+        lessons.push({ id: child.key, ...child.val() });
+      });
+      console.log('Всего уроков после обработки:', lessons.length);
       return lessons;
     }
 
