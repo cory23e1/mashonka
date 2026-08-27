@@ -369,14 +369,27 @@ document.addEventListener('DOMContentLoaded', function () {
       // Отмечаем дни, где есть уроки
       fetchAllLessons().then(lessons => {
         const datesWithLessons = new Set(lessons.map(l => l.date));
+        console.log('Даты с уроками:', datesWithLessons); // для отладки
+        
         document.querySelectorAll('.day:not(.other-month)').forEach(day => {
-          if (datesWithLessons.has(day.dataset.date)) {
+          const normalizedDayDate = normalizeDate(day.dataset.date);
+          if (datesWithLessons.has(normalizedDayDate)) {
             day.classList.add('has-lessons');
           }
           day.addEventListener('click', () => showLessonsForDate(day.dataset.date));
         });
       });
     }
+
+  function normalizeDate(dateStr) {
+    if (!dateStr) return '';
+    const parts = dateStr.split('.');
+    if (parts.length !== 3) return dateStr;
+    const day = parts[0].padStart(2, '0');
+    const month = parts[1].padStart(2, '0');
+    const year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+    return `${day}.${month}.${year}`;
+  }
 
     async function showLessonsForDate(dateStr) {
       const lessons = await fetchLessonsForDate(dateStr);
