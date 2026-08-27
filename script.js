@@ -266,9 +266,13 @@ document.addEventListener('DOMContentLoaded', function () {
       form.className = 'lesson-form';
       form.innerHTML = `
         <h4>${date}</h4>
+        <h4>Время встречи:</h4>
         <input type="time" id="lesson-time" value="${existingLesson?.time || ''}" placeholder="Время (ЧЧ:ММ)">
+        <h4>Zoom</h4>
         <input type="text" id="lesson-zoom" value="${existingLesson?.zoomLink || ''}" placeholder="Ссылка на Zoom">
+        <h4>Домашнее задание</h4>
         <input type="file" id="lesson-file">
+        <h4>Комментарий к домашнему заданию</h4>
         <textarea id="lesson-comment" placeholder="Комментарий к домашнему заданию">${existingLesson?.homework?.comment || ''}</textarea>
         <button id="save-lesson">Сохранить</button>
         ${existingLesson ? `<button id="delete-lesson" style="background:#e74c3c;">Удалить урок</button>` : ''}
