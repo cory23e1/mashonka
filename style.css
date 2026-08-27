@@ -77,3 +77,13 @@
 
     .logout-btn { position: absolute; top: 15px; right: 20px; background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; z-index: 10; }
     .logout-btn:hover { background: #c0392b; }
+
+#prev-month{
+    padding:5px 10px;
+    width:50%;
+}
+
+#next-month{
+    padding:5px 10px;
+    width:50%;
+}
