@@ -46,7 +46,7 @@
 
     /* Ученик */
     #student-panel { padding: 20px; }
-    .student-header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 30px; }
+    .student-header { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 30px; }
     .student-header img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-left: 15px; }
     .student-header .name { font-size: 20px; font-weight: bold; }
     .upcoming-lessons { max-width: 600px; margin: 0 auto; }
