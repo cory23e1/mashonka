@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let allStudents = [];            // кэш списка учеников
 
     //Биндинг функций к кнопкам
-    document.getElementById('close-modal-btn').addEventListener('click', closeModal);
 
     // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
     function showLoginError(msg) {
@@ -397,14 +396,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function showLessonsForDate(dateStr) {
       const lessons = await fetchLessonsForDate(dateStr);
-      const modal = document.getElementById('modal');
-      const modalDate = document.getElementById('modal-date');
-      const modalLessons = document.getElementById('modal-lessons');
-      modalDate.textContent = `Занятия на ${dateStr}`;
-      modalLessons.innerHTML = '';
-      
+      const infoBlock = document.getElementById('selected-date-info');
+      const title = document.getElementById('selected-date-title');
+      const lessonsContainer = document.getElementById('selected-date-lessons');
+    
+      title.textContent = `Занятия на ${dateStr}`;
+      lessonsContainer.innerHTML = '';
+    
       if (lessons.length === 0) {
-        modalLessons.innerHTML = '<p>Нет занятий</p>';
+        lessonsContainer.innerHTML = '<p>Нет занятий</p>';
       } else {
         for (const lesson of lessons) {
           const student = allStudents.find(s => s.id === lesson.studentId);
@@ -414,14 +414,11 @@ document.addEventListener('DOMContentLoaded', function () {
             <strong>${student?.fullName || 'Неизвестный ученик'}</strong> — ${lesson.time || 'время не указано'}
             ${lesson.zoomLink ? `<br><a href="${lesson.zoomLink}" target="_blank">Zoom</a>` : ''}
           `;
-          modalLessons.appendChild(div);
+          lessonsContainer.appendChild(div);
         }
       }
-      modal.classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('modal').classList.add('hidden');
+    
+      infoBlock.classList.remove('hidden');
     }
 
     // ==================== АКТИВНОСТЬ НА СЕГОДНЯ ====================
