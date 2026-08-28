@@ -205,6 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('teacher-panel').classList.remove('hidden');
       document.getElementById('student-panel').classList.add('hidden');
       renderTeacherInterface();
+      renderMaterials('materials-list');
     }
 
     function enterStudentMode(student) {
@@ -215,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('student-name').textContent = student.fullName;
       document.getElementById('student-avatar').src = student.avatarUrl || 'https://via.placeholder.com/60';
       renderStudentLessons(student.id);
+      renderMaterials('materials-list-student');
     }
 
     // ==================== ИНТЕРФЕЙС ПРЕПОДАВАТЕЛЯ ====================
@@ -565,4 +567,77 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
       }
     }
+
+  // ==================== МАТЕРИАЛЫ ====================
+
+  // Загрузка списка материалов и отображение в указанном контейнере
+  async function renderMaterials(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '<p>Загрузка...</p>';
+    
+    try {
+      const snapshot = await database.ref('materials').once('value');
+      const materials = [];
+      snapshot.forEach(child => {
+        materials.push({ id: child.key, ...child.val() });
+      });
+      
+      // Сортировка по дате загрузки (новые сверху)
+      materials.sort((a, b) => (b.uploadedAt || 0) - (a.uploadedAt || 0));
+      
+      if (materials.length === 0) {
+        container.innerHTML = '<p>Материалов пока нет</p>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      materials.forEach(mat => {
+        const div = document.createElement('div');
+        div.className = 'material-item';
+        div.innerHTML = `
+          <a href="${mat.fileData}" target="_blank" download="${mat.fileName}">${mat.fileName}</a>
+          <span class="material-date">${mat.uploadedAt ? new Date(mat.uploadedAt).toLocaleString('ru-RU') : ''}</span>
+        `;
+        container.appendChild(div);
+      });
+    } catch (error) {
+      console.error('Ошибка загрузки материалов:', error);
+      container.innerHTML = '<p>Ошибка загрузки материалов</p>';
+    }
+  }
+  
+  // Обработчик кнопки загрузки материала (только для преподавателя)
+  document.getElementById('upload-material-btn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('material-file');
+    const file = fileInput.files[0];
+    if (!file) {
+      alert('Выберите файл для загрузки');
+      return;
+    }
+    
+    // Проверка типа файла
+    const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'];
+    const extension = file.name.split('.').pop().toLowerCase();
+    if (!allowedExtensions.includes(extension)) {
+      alert('Недопустимый тип файла. Разрешены: pdf, doc, docx, xls, xlsx, txt');
+      return;
+    }
+    
+    try {
+      const fileData = await readFileAsDataURL(file);
+      await database.ref('materials').push({
+        fileName: file.name,
+        fileData: fileData,
+        uploadedAt: Date.now()
+      });
+      fileInput.value = '';
+      alert('Материал загружен');
+      renderMaterials('materials-list');
+    } catch (error) {
+      console.error('Ошибка загрузки материала:', error);
+      alert('Ошибка загрузки материала');
+    }
+  });
+  
 });
