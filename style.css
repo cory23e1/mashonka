@@ -249,6 +249,18 @@
       flex-direction: column;
       gap: 10px;
     }
+
+    .materials-upload {
+      flex-direction: column;
+    }
+    .materials-upload input[type="file"],
+    .materials-upload button {
+      width: 100%;
+    }
+    .material-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
 }
 
 /* ========== ШАПКА САЙТА ========== */
