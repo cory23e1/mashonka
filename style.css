@@ -3,7 +3,12 @@
     .hidden { display: none !important; }
 
     /* Экран входа */
-    #login-screen { display: flex; justify-content: center; align-items: center; height: 100vh; }
+    #login-screen { display: flex; justify-content: center; align-items: center; height: 100vh; opacity: 0; animation: ani 2.5s forwards;}
+    @keyframes ani {
+      0% {opacity: 0;}
+      100% {opacity: 1;}
+    }
+
     .login-card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 320px; }
     .login-card h2 { text-align: center; margin-bottom: 1.5rem; color: #333; }
     .login-card input { width: 100%; padding: 10px; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 8px; }
@@ -397,4 +402,8 @@
 
 .student-content{
     display:flex;
+}
+
+.login-sex-poster{
+    
 }
