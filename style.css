@@ -266,6 +266,10 @@
       flex-direction: column;
       align-items: flex-start;
     }
+
+    .material-column {
+        width: 200px;
+      }
 }
 
 /* ========== ШАПКА САЙТА ========== */
@@ -416,4 +420,33 @@
 #baba2{
   /* transform: translateX(+100%); /* Элемент за пределами экрана слева */
   transition: transform 0.5s ease-in-out; */
+}
+
+/* Контейнер списка материалов — горизонтальная прокрутка */
+#materials-list,
+#materials-list-student {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 15px;
+  padding-bottom: 10px;
+}
+
+/* Колонка с материалами (по 5 элементов) */
+.material-column {
+  flex: 0 0 auto;       /* не сжиматься, не растягиваться */
+  width: 250px;         /* фиксированная ширина колонки */
+}
+
+/* Элемент материала внутри колонки */
+.material-item {
+  padding: 10px;
+  background: white;
+  margin-bottom: 8px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  word-break: break-all;
 }
