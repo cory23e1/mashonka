@@ -3,7 +3,7 @@
     .hidden { display: none !important; }
 
     /* Экран входа */
-    #login-screen { display: flex; justify-content: center; align-items: center; height: 100vh; opacity: 0; animation: ani 2.5s forwards;}
+    #login-screen { display: flex; justify-content: center; align-items: center; height: 100vh; opacity: 0; animation: ani 5s forwards;}
     @keyframes ani {
       0% {opacity: 0;}
       100% {opacity: 1;}
