@@ -45,7 +45,7 @@
     .modal-content .lesson-entry { padding: 10px; border-bottom: 1px solid #eee; }
 
     /* Ученик */
-    #student-panel { padding: 20px; position: relative;}
+    #student-panel { padding: 20px; position: relative; height:100vh;}
     .student-header { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 30px; }
     .student-header img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-left: 15px; }
     .student-header .name { font-size: 20px; font-weight: bold; }
