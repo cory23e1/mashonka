@@ -407,3 +407,13 @@
 .login-sex-poster{
     
 }
+
+#baba1{
+  transform: translateX(-100%); /* Элемент за пределами экрана слева */
+  transition: transform 0.5s ease-in-out;
+}
+
+#baba2{
+  /* transform: translateX(+100%); /* Элемент за пределами экрана слева */
+  transition: transform 0.5s ease-in-out; */
+}
