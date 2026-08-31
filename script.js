@@ -290,6 +290,10 @@ document.addEventListener('DOMContentLoaded', function () {
         <input type="time" id="lesson-time" value="${existingLesson?.time || ''}" placeholder="Время (ЧЧ:ММ)">
         <h4>Zoom</h4>
         <input type="text" id="lesson-zoom" value="${existingLesson?.zoomLink || ''}" placeholder="Ссылка на Zoom">
+        <h4>Идентификатор конференции</h4>
+        <input type="text" id="lesson-zoom-id" value="${existingLesson?.zoomId || ''}" placeholder="Идентификатор конференции">
+        <h4>Пароль конференции</h4>
+        <input type="text" id="lesson-zoom-password" value="${existingLesson?.zoomPassword || ''}" placeholder="Пароль конференции">
         <h4>Домашнее задание</h4>
         <input type="file" id="lesson-file">
         <h4>Комментарий к домашнему заданию</h4>
@@ -314,11 +318,16 @@ document.addEventListener('DOMContentLoaded', function () {
         homeworkData = { ...homeworkData, comment };
       }
 
+        const zoomId = document.getElementById('lesson-zoom-id').value;
+        const zoomPassword = document.getElementById('lesson-zoom-password').value;
+        
         const lessonData = {
           studentId,
           date,
           time,
           zoomLink,
+          zoomId,
+          zoomPassword,
           homework: homeworkData
         };
 
@@ -427,10 +436,26 @@ document.addEventListener('DOMContentLoaded', function () {
           const student = allStudents.find(s => s.id === lesson.studentId);
           const div = document.createElement('div');
           div.className = 'lesson-entry';
+          // div.innerHTML = `
+          //   <strong>${student?.fullName || 'Неизвестный ученик'}</strong> — ${lesson.time || 'время не указано'}
+          //   ${lesson.zoomLink ? `<br><a href="${lesson.zoomLink}" target="_blank">Zoom</a>` : ''}
+          // `;
+
+          let zoomDetails = '';
+          if (lesson.zoomLink) {
+            zoomDetails += `<br><a href="${lesson.zoomLink}" target="_blank">Zoom</a>`;
+          }
+          if (lesson.zoomId) {
+            zoomDetails += `<br>ID: ${lesson.zoomId}`;
+          }
+          if (lesson.zoomPassword) {
+            zoomDetails += `<br>Пароль: ${lesson.zoomPassword}`;
+          }
           div.innerHTML = `
             <strong>${student?.fullName || 'Неизвестный ученик'}</strong> — ${lesson.time || 'время не указано'}
-            ${lesson.zoomLink ? `<br><a href="${lesson.zoomLink}" target="_blank">Zoom</a>` : ''}
+            ${zoomDetails}
           `;
+          
           lessonsContainer.appendChild(div);
         }
       }
@@ -451,7 +476,21 @@ document.addEventListener('DOMContentLoaded', function () {
           const student = allStudents.find(s => s.id === lesson.studentId);
           const div = document.createElement('div');
           div.style.marginBottom = '5px';
-          div.innerHTML = `${student?.fullName || 'Ученик'} — ${lesson.time} ${lesson.zoomLink ? `(<a href="${lesson.zoomLink}" target="_blank">Zoom</a>)` : ''}`;
+          
+          // div.innerHTML = `${student?.fullName || 'Ученик'} — ${lesson.time} ${lesson.zoomLink ? `(<a href="${lesson.zoomLink}" target="_blank">Zoom</a>)` : ''}`;
+
+          let zoomInfo = '';
+          if (lesson.zoomLink) {
+            zoomInfo += `<a href="${lesson.zoomLink}" target="_blank">Zoom</a>`;
+          }
+          if (lesson.zoomId) {
+            zoomInfo += ` | ID: ${lesson.zoomId}`;
+          }
+          if (lesson.zoomPassword) {
+            zoomInfo += ` | Пароль: ${lesson.zoomPassword}`;
+          }
+          div.innerHTML = `${student?.fullName || 'Ученик'} — ${lesson.time} ${zoomInfo ? `(${zoomInfo})` : ''}`;
+          
           container.appendChild(div);
         }
       }
@@ -475,7 +514,11 @@ document.addEventListener('DOMContentLoaded', function () {
           card.className = 'lesson-card';
           card.innerHTML = `
             <h4>${lesson.date} в ${lesson.time || 'не указано'}</h4>
+
             ${lesson.zoomLink ? `<p>Zoom: <a href="${lesson.zoomLink}" target="_blank">${lesson.zoomLink}</a></p>` : ''}
+            ${lesson.zoomId ? `<p>ID конференции: ${lesson.zoomId}</p>` : ''}
+            ${lesson.zoomPassword ? `<p>Пароль: ${lesson.zoomPassword}</p>` : ''}
+              
             <div class="homework">
               <strong>Домашнее задание:</strong><br>
               ${lesson.homework?.fileName ? `<a href="${lesson.homework.fileUrl}" target="_blank">${lesson.homework.fileName}</a>` : 'Нет файла'}
