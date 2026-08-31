@@ -405,7 +405,14 @@ document.addEventListener('DOMContentLoaded', function () {
           if (datesWithLessons.has(normalizedDayDate)) {
             day.classList.add('has-lessons');
           }
-          day.addEventListener('click', () => showLessonsForDate(day.dataset.date));
+          day.addEventListener('click', () => {
+            // Убираем выделение со всех дней
+            document.querySelectorAll('.calendar .day').forEach(d => d.classList.remove('selected'));
+            // Выделяем текущий день
+            day.classList.add('selected');
+            // Показываем информацию о занятиях
+            showLessonsForDate(day.dataset.date);
+          });
         });
       });
     }
