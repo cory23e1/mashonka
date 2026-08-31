@@ -384,3 +384,13 @@
 #material-file {
     width:50%;
 }
+
+.calendar .day.selected {
+  background: #f39c12;
+  color: white;
+  box-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
+}
+
+.calendar .day.selected.today {
+  background: #e67e22;
+}
