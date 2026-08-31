@@ -642,15 +642,26 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       
       container.innerHTML = '';
-      materials.forEach(mat => {
-        const div = document.createElement('div');
-        div.className = 'material-item';
-        div.innerHTML = `
-          <a href="${mat.fileData}" target="_blank" download="${mat.fileName}">${mat.fileName}</a>
-          <span class="material-date">${mat.uploadedAt ? new Date(mat.uploadedAt).toLocaleString('ru-RU') : ''}</span>
-        `;
-        container.appendChild(div);
-      });
+      
+      // Группируем по 5 элементов в колонке
+      const itemsPerColumn = 5;
+      for (let i = 0; i < materials.length; i += itemsPerColumn) {
+        const column = document.createElement('div');
+        column.className = 'material-column';
+        
+        const chunk = materials.slice(i, i + itemsPerColumn);
+        chunk.forEach(mat => {
+          const div = document.createElement('div');
+          div.className = 'material-item';
+          div.innerHTML = `
+            <a href="${mat.fileData}" target="_blank" download="${mat.fileName}">${mat.fileName}</a>
+            <span class="material-date">${mat.uploadedAt ? new Date(mat.uploadedAt).toLocaleString('ru-RU') : ''}</span>
+          `;
+          column.appendChild(div);
+        });
+        
+        container.appendChild(column);
+      }
     } catch (error) {
       console.error('Ошибка загрузки материалов:', error);
       container.innerHTML = '<p>Ошибка загрузки материалов</p>';
