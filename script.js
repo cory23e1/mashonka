@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('teacher-panel').classList.remove('hidden');
       document.getElementById('student-panel').classList.add('hidden');
       renderTeacherInterface();
-      renderMaterials('materials-list');
+      renderMaterials('materials-list', true);
     }
 
     function enterStudentMode(student) {
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('student-name').textContent = student.fullName;
       document.getElementById('student-avatar').src = student.avatarUrl || 'https://via.placeholder.com/60';
       renderStudentLessons(student.id);
-      renderMaterials('materials-list-student');
+      renderMaterials('materials-list-student', false);
     }
 
     // ==================== ИНТЕРФЕЙС ПРЕПОДАВАТЕЛЯ ====================
@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // ==================== МАТЕРИАЛЫ ====================
 
   // Загрузка списка материалов и отображение в указанном контейнере
-  async function renderMaterials(containerId) {
+  async function renderMaterials(containerId, canDelete = false) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = '<p>Загрузка...</p>';
@@ -643,7 +643,6 @@ document.addEventListener('DOMContentLoaded', function () {
         materials.push({ id: child.key, ...child.val() });
       });
       
-      // Сортировка по дате загрузки (новые сверху)
       materials.sort((a, b) => (b.uploadedAt || 0) - (a.uploadedAt || 0));
       
       if (materials.length === 0) {
@@ -653,7 +652,6 @@ document.addEventListener('DOMContentLoaded', function () {
       
       container.innerHTML = '';
       
-      // Группируем по 5 элементов в колонке
       const itemsPerColumn = 5;
       for (let i = 0; i < materials.length; i += itemsPerColumn) {
         const column = document.createElement('div');
@@ -666,15 +664,39 @@ document.addEventListener('DOMContentLoaded', function () {
           div.innerHTML = `
             <a href="${mat.fileData}" target="_blank" download="${mat.fileName}">${mat.fileName}</a>
             <span class="material-date">${mat.uploadedAt ? new Date(mat.uploadedAt).toLocaleString('ru-RU') : ''}</span>
+            ${canDelete ? `<button class="delete-material-btn" data-id="${mat.id}">Удалить</button>` : ''}
           `;
           column.appendChild(div);
         });
         
         container.appendChild(column);
       }
+      
+      // Если разрешено удаление, привязываем обработчики
+      if (canDelete) {
+        container.querySelectorAll('.delete-material-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const materialId = e.target.dataset.id;
+            if (confirm('Удалить этот материал?')) {
+              await deleteMaterial(materialId);
+              renderMaterials(containerId, canDelete); // обновляем список
+            }
+          });
+        });
+      }
     } catch (error) {
       console.error('Ошибка загрузки материалов:', error);
       container.innerHTML = '<p>Ошибка загрузки материалов</p>';
+    }
+  }
+
+  async function deleteMaterial(materialId) {
+    try {
+      await database.ref(`materials/${materialId}`).remove();
+      console.log('Материал удалён:', materialId);
+    } catch (error) {
+      console.error('Ошибка удаления материала:', error);
+      alert('Не удалось удалить материал');
     }
   }
   
