@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Кнопка добавления новой даты
       const addBtn = document.createElement('button');
-      addBtn.textContent = '+ Добавить дату';
+      addBtn.textContent = '+ Добавить занятие';
       addBtn.style.cssText = 'margin-top:10px; padding:8px; background:#3498db; color:white; border:none; border-radius:5px; cursor:pointer;';
       addBtn.addEventListener('click', () => {
         const newDate = prompt('Введите дату в формате ДД.ММ.ГГГГ:');
@@ -285,6 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const form = document.createElement('div');
       form.className = 'lesson-form';
       form.innerHTML = `
+        ${existingLesson?.cancellation?.cancelled ? `<div class="cancellation-info" style="margin-bottom:10px; color:red;">Отменено учеником: ${existingLesson.cancellation.reason || ''}</div>` : ''}
         <h4>${date}</h4>
         <h4>Время встречи:</h4>
         <input type="time" id="lesson-time" value="${existingLesson?.time || ''}" placeholder="Время (ЧЧ:ММ)">
@@ -443,10 +444,6 @@ document.addEventListener('DOMContentLoaded', function () {
           const student = allStudents.find(s => s.id === lesson.studentId);
           const div = document.createElement('div');
           div.className = 'lesson-entry';
-          // div.innerHTML = `
-          //   <strong>${student?.fullName || 'Неизвестный ученик'}</strong> — ${lesson.time || 'время не указано'}
-          //   ${lesson.zoomLink ? `<br><a href="${lesson.zoomLink}" target="_blank">Zoom</a>` : ''}
-          // `;
 
           let zoomDetails = '';
           if (lesson.zoomLink) {
@@ -466,11 +463,18 @@ document.addEventListener('DOMContentLoaded', function () {
           if (lesson.homework && lesson.homework.comment) {
             homeworkDetails += `<div class="homework-comment"><strong>Комментарий:</strong> ${lesson.homework.comment}</div>`;
           }
+
+          let cancellationInfo = '';
+          if (lesson.cancellation && lesson.cancellation.cancelled) {
+            cancellationInfo = `<div class="cancellation-info" style="margin-top:5px; color:red;">Отменено: ${lesson.cancellation.reason || 'причина не указана'}</div>`;
+          }
           
           div.innerHTML = `
             <strong>${student?.fullName || 'Неизвестный ученик'}</strong> — ${lesson.time || 'время не указано'}
             ${zoomDetails}
             ${homeworkDetails}
+            ${cancellationInfo}
+            ${currentUser?.type === 'teacher' ? `<button class="delete-lesson-btn" data-id="${lesson.id}">Удалить</button>` : ''}
           `;
           
           lessonsContainer.appendChild(div);
@@ -494,8 +498,6 @@ document.addEventListener('DOMContentLoaded', function () {
           const div = document.createElement('div');
           div.style.marginBottom = '5px';
           
-          // div.innerHTML = `${student?.fullName || 'Ученик'} — ${lesson.time} ${lesson.zoomLink ? `(<a href="${lesson.zoomLink}" target="_blank">Zoom</a>)` : ''}`;
-
           let zoomInfo = '';
           if (lesson.zoomLink) {
             zoomInfo += `<a href="${lesson.zoomLink}" target="_blank">Zoom</a>`;
@@ -506,7 +508,16 @@ document.addEventListener('DOMContentLoaded', function () {
           if (lesson.zoomPassword) {
             zoomInfo += ` | Пароль: ${lesson.zoomPassword}`;
           }
-          div.innerHTML = `${student?.fullName || 'Ученик'} — ${lesson.time} ${zoomInfo ? `(${zoomInfo})` : ''}`;
+          let cancellationInfo = '';
+          if (lesson.cancellation && lesson.cancellation.cancelled) {
+            cancellationInfo = `<span style="color:red;"> (Отменено: ${lesson.cancellation.reason || 'нет причины'})</span>`;
+          }
+          div.innerHTML = `
+            ${student?.fullName || 'Ученик'} — ${lesson.time}
+            ${zoomInfo ? `(${zoomInfo})` : ''}
+            ${cancellationInfo}
+            ${currentUser?.type === 'teacher' ? `<button class="delete-lesson-btn" data-id="${lesson.id}">Удалить</button>` : ''}
+          `;
           
           container.appendChild(div);
         }
@@ -525,33 +536,73 @@ document.addEventListener('DOMContentLoaded', function () {
       container.innerHTML = '';
       if (upcoming.length === 0) {
         container.innerHTML = '<p>Нет предстоящих занятий</p>';
-      } else {
-        upcoming.forEach(lesson => {
-          const card = document.createElement('div');
-          card.className = 'lesson-card';
-          card.innerHTML = `
-            <h4>${lesson.date} в ${lesson.time || 'не указано'}</h4>
-
-            ${lesson.zoomLink ? `<p>Zoom: <a href="${lesson.zoomLink}" target="_blank">${lesson.zoomLink}</a></p>` : ''}
-            ${lesson.zoomId ? `<p>ID конференции: ${lesson.zoomId}</p>` : ''}
-            ${lesson.zoomPassword ? `<p>Пароль: ${lesson.zoomPassword}</p>` : ''}
-              
-            <div class="homework">
-              <strong>Домашнее задание:</strong><br>
-              ${lesson.homework?.fileName ? `<a href="${lesson.homework.fileUrl}" target="_blank">${lesson.homework.fileName}</a>` : 'Нет файла'}
-              ${lesson.homework?.comment ? `<p>Комментарий: ${lesson.homework.comment}</p>` : ''}
+        return;
+      }
+    
+      for (const lesson of upcoming) {
+        const card = document.createElement('div');
+        card.className = 'lesson-card';
+    
+        let cardContent = `
+          <h4>${lesson.date} в ${lesson.time || 'не указано'}</h4>
+          ${lesson.zoomLink ? `<p>Zoom: <a href="${lesson.zoomLink}" target="_blank">${lesson.zoomLink}</a></p>` : ''}
+          ${lesson.zoomId ? `<p>ID конференции: ${lesson.zoomId}</p>` : ''}
+          ${lesson.zoomPassword ? `<p>Пароль: ${lesson.zoomPassword}</p>` : ''}
+          <div class="homework">
+            <strong>Домашнее задание:</strong><br>
+            ${lesson.homework?.fileName ? `<a href="${lesson.homework.fileUrl}" target="_blank">${lesson.homework.fileName}</a>` : 'Нет файла'}
+            ${lesson.homework?.comment ? `<p>Комментарий: ${lesson.homework.comment}</p>` : ''}
+          </div>
+        `;
+    
+        if (lesson.cancellation && lesson.cancellation.cancelled) {
+          cardContent += `
+            <div class="cancellation-info" style="margin-top: 10px; padding: 8px; background: #fee; border-radius: 5px;">
+              <span style="color: #c00; font-weight: bold;">Отменено учеником</span>
+              <p>Причина: ${lesson.cancellation.reason || 'не указана'}</p>
             </div>
           `;
-          container.appendChild(card);
-        });
+        } else {
+          cardContent += `
+            <button class="cancel-lesson-btn" data-id="${lesson.id}" style="margin-top:10px; padding:6px 12px; background:#e74c3c; color:white; border:none; border-radius:4px; cursor:pointer;">Отказаться</button>
+          `;
+        }
+    
+        card.innerHTML = cardContent;
+        container.appendChild(card);
       }
+    
+      // Обработчики кнопок отказа
+      container.querySelectorAll('.cancel-lesson-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const lessonId = e.target.dataset.id;
+          const reason = prompt('Укажите причину отказа:');
+          if (reason === null) return;
+          if (reason.trim() === '') {
+            alert('Причина не может быть пустой');
+            return;
+          }
+          try {
+            await database.ref(`lessons/${lessonId}/cancellation`).set({
+              cancelled: true,
+              reason: reason.trim(),
+              cancelledAt: Date.now()
+            });
+            renderStudentLessons(studentId);
+          } catch (error) {
+            console.error('Ошибка при отмене урока:', error);
+            alert('Не удалось отменить урок');
+          }
+        });
+      });
     }
 
     // ==================== УВЕДОМЛЕНИЯ ====================
     async function checkTodayNotifications() {
       const todayStr = formatDate(new Date());
       const lessons = await fetchLessonsForDate(todayStr);
-      if (lessons.length > 0) {
+      const activeLessons = lessons.filter(l => !(l.cancellation && l.cancellation.cancelled));
+      if (activeLessons.length > 0) {
         if (currentUser.type === 'teacher') {
           const names = lessons.map(l => allStudents.find(s => s.id === l.studentId)?.fullName || 'ученик').join(', ');
           showToast(`Сегодня у вас ${lessons.length} встреч(и): ${names}`);
