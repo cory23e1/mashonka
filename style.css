@@ -450,3 +450,13 @@
   align-items: center;
   word-break: break-all;
 }
+
+.homework-info {
+  margin-top: 5px;
+  font-size: 14px;
+}
+.homework-comment {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #555;
+}
