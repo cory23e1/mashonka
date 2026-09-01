@@ -460,3 +460,17 @@
   font-size: 14px;
   color: #555;
 }
+
+.delete-material-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 10px;
+}
+.delete-material-btn:hover {
+  background: #c0392b;
+}
