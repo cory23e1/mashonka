@@ -458,9 +458,19 @@ document.addEventListener('DOMContentLoaded', function () {
           if (lesson.zoomPassword) {
             zoomDetails += `<br>Пароль: ${lesson.zoomPassword}`;
           }
+
+          let homeworkDetails = '';
+          if (lesson.homework && lesson.homework.fileName) {
+            homeworkDetails += `<div class="homework-info"><strong>Домашнее задание:</strong> <a href="${lesson.homework.fileUrl}" target="_blank" download="${lesson.homework.fileName}">${lesson.homework.fileName}</a></div>`;
+          }
+          if (lesson.homework && lesson.homework.comment) {
+            homeworkDetails += `<div class="homework-comment"><strong>Комментарий:</strong> ${lesson.homework.comment}</div>`;
+          }
+          
           div.innerHTML = `
             <strong>${student?.fullName || 'Неизвестный ученик'}</strong> — ${lesson.time || 'время не указано'}
             ${zoomDetails}
+            ${homeworkDetails}
           `;
           
           lessonsContainer.appendChild(div);
