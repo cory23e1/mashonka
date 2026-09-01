@@ -474,3 +474,14 @@
 .delete-material-btn:hover {
   background: #c0392b;
 }
+
+.cancellation-info {
+  font-size: 14px;
+  background: #fee;
+  padding: 8px;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+.cancel-lesson-btn:hover {
+  background: #c0392b;
+}
