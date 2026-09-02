@@ -485,3 +485,20 @@
 .cancel-lesson-btn:hover {
   background: #c0392b;
 }
+
+.lesson-entry {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+.lesson-entry img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+.lesson-entry .lesson-info {
+  flex: 1;
+}
