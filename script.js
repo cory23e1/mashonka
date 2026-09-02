@@ -444,6 +444,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const student = allStudents.find(s => s.id === lesson.studentId);
           const div = document.createElement('div');
           div.className = 'lesson-entry';
+          const avatarUrl = student?.avatarUrl || 'https://via.placeholder.com/40';
 
           let zoomDetails = '';
           if (lesson.zoomLink) {
@@ -470,11 +471,14 @@ document.addEventListener('DOMContentLoaded', function () {
           }
           
           div.innerHTML = `
-            <strong>${student?.fullName || 'Неизвестный ученик'}</strong> — ${lesson.time || 'время не указано'}
-            ${zoomDetails}
-            ${homeworkDetails}
-            ${cancellationInfo}
-            ${currentUser?.type === 'teacher' ? `<button class="delete-lesson-btn" data-id="${lesson.id}">Удалить</button>` : ''}
+            <img src="${avatarUrl}" alt="Аватар">
+            <div class="lesson-info">
+              <strong>${student?.fullName || 'Неизвестный ученик'}</strong> — ${lesson.time || 'время не указано'}
+              ${zoomDetails}
+              ${homeworkDetails}
+              ${cancellationInfo}
+              ${currentUser?.type === 'teacher' ? `<button class="delete-lesson-btn" data-id="${lesson.id}">Удалить</button>` : ''}
+            </div>
           `;
           
           lessonsContainer.appendChild(div);
