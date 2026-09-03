@@ -698,6 +698,7 @@ document.addEventListener('DOMContentLoaded', function () {
         materials.push({ id: child.key, ...child.val() });
       });
       
+      // Сортировка по дате загрузки (новые сверху)
       materials.sort((a, b) => (b.uploadedAt || 0) - (a.uploadedAt || 0));
       
       if (materials.length === 0) {
@@ -707,34 +708,25 @@ document.addEventListener('DOMContentLoaded', function () {
       
       container.innerHTML = '';
       
-      const itemsPerColumn = 5;
-      for (let i = 0; i < materials.length; i += itemsPerColumn) {
-        const column = document.createElement('div');
-        column.className = 'material-column';
-        
-        const chunk = materials.slice(i, i + itemsPerColumn);
-        chunk.forEach(mat => {
-          const div = document.createElement('div');
-          div.className = 'material-item';
-          div.innerHTML = `
-            <a href="${mat.fileData}" target="_blank" download="${mat.fileName}">${mat.fileName}</a>
-            <span class="material-date">${mat.uploadedAt ? new Date(mat.uploadedAt).toLocaleString('ru-RU') : ''}</span>
-            ${canDelete ? `<button class="delete-material-btn" data-id="${mat.id}">Удалить</button>` : ''}
-          `;
-          column.appendChild(div);
-        });
-        
-        container.appendChild(column);
-      }
+      materials.forEach(mat => {
+        const div = document.createElement('div');
+        div.className = 'material-item';
+        div.innerHTML = `
+          <a href="${mat.fileData}" target="_blank" download="${mat.fileName}">${mat.fileName}</a>
+          <span class="material-date">${mat.uploadedAt ? new Date(mat.uploadedAt).toLocaleString('ru-RU') : ''}</span>
+          ${canDelete ? `<button class="delete-material-btn" data-id="${mat.id}">Удалить</button>` : ''}
+        `;
+        container.appendChild(div);
+      });
       
-      // Если разрешено удаление, привязываем обработчики
+      // Привязываем обработчики удаления, если разрешено
       if (canDelete) {
         container.querySelectorAll('.delete-material-btn').forEach(btn => {
           btn.addEventListener('click', async (e) => {
             const materialId = e.target.dataset.id;
             if (confirm('Удалить этот материал?')) {
               await deleteMaterial(materialId);
-              renderMaterials(containerId, canDelete); // обновляем список
+              renderMaterials(containerId, canDelete);
             }
           });
         });
