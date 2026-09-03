@@ -422,20 +422,12 @@
   transition: transform 0.5s ease-in-out; */
 }
 
-/* Контейнер списка материалов — горизонтальная прокрутка */
 #materials-list,
 #materials-list-student {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  gap: 15px;
-  padding-bottom: 10px;
-}
-
-/* Колонка с материалами (по 5 элементов) */
-.material-column {
-  flex: 0 0 auto;       /* не сжиматься, не растягиваться */
-  width: 250px;         /* фиксированная ширина колонки */
+  display: block;
+  max-height: 400px;      /* ограничиваем высоту для появления вертикальной прокрутки */
+  overflow-y: auto;       /* включаем вертикальную прокрутку */
+  padding-right: 5px;     /* небольшой отступ для полосы прокрутки */
 }
 
 /* Элемент материала внутри колонки */
