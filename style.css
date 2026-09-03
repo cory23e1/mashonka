@@ -432,15 +432,14 @@
 
 /* Элемент материала внутри колонки */
 .material-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 10px;
   background: white;
   margin-bottom: 8px;
   border-radius: 5px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  word-break: break-all;
 }
 
 .homework-info {
