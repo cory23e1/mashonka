@@ -500,3 +500,35 @@
 .lesson-entry .lesson-info {
   flex: 1;
 }
+
+/* Общий стиль для архивных (прошедших) занятий */
+.past-lesson-item {
+  background: #f0f0f0;
+  color: #888;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  box-shadow: none;
+  border-left: 3px solid #b0b0b0;
+}
+
+.past-lesson-item .lesson-time {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+/* Ограничение высоты списков архива с прокруткой */
+#student-past-lessons,
+#teacher-past-lessons {
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Стили для карточек ученика, если они будут в архиве */
+.lesson-card.past {
+  background: #f0f0f0;
+  color: #888;
+  box-shadow: none;
+  border-left: 3px solid #b0b0b0;
+}
