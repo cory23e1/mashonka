@@ -27,6 +27,13 @@ document.addEventListener('DOMContentLoaded', function () {
       return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
     }
 
+    function isPastLesson(lesson) {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const lessonDate = parseDate(lesson.date);
+      return lessonDate < today;
+    }
+
     function showToast(message) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -206,6 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('student-panel').classList.add('hidden');
       renderTeacherInterface();
       renderMaterials('materials-list', true);
+      renderTeacherPastLessons();
     }
 
     function enterStudentMode(student) {
@@ -338,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
           await database.ref('lessons').push(lessonData);
         }
         alert('Урок сохранён');
+        renderTeacherPastLessons();
         onStudentClick(allStudents.find(s => s.id === studentId));
         renderCalendar(currentYear, currentMonth);
         renderTodayActivity();
@@ -348,6 +357,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (confirm('Удалить этот урок?')) {
             await database.ref(`lessons/${existingLesson.id}`).remove();
             alert('Урок удалён');
+            renderTeacherPastLessons();
             onStudentClick(allStudents.find(s => s.id === studentId));
             renderCalendar(currentYear, currentMonth);
             renderTodayActivity();
@@ -535,19 +545,21 @@ document.addEventListener('DOMContentLoaded', function () {
       const upcoming = lessons
         .filter(l => parseDate(l.date) >= parseDate(todayStr))
         .sort((a,b) => parseDate(a.date) - parseDate(b.date));
+      const past = lessons
+        .filter(l => isPastLesson(l))
+        .sort((a,b) => parseDate(b.date) - parseDate(a.date)); // сначала новые
       
       const container = document.getElementById('student-lessons');
       container.innerHTML = '';
       if (upcoming.length === 0) {
         container.innerHTML = '<p>Нет предстоящих занятий</p>';
-        return;
       }
-    
-      for (const lesson of upcoming) {
-        const card = document.createElement('div');
-        card.className = 'lesson-card';
-    
-        let cardContent = `
+      else {
+        for (const lesson of upcoming) {
+          const card = document.createElement('div');
+          card.className = 'lesson-card';
+          
+          let cardContent = `
           <h4>${lesson.date} в ${lesson.time || 'не указано'}</h4>
           ${lesson.zoomLink ? `<p>Zoom: <a href="${lesson.zoomLink}" target="_blank">${lesson.zoomLink}</a></p>` : ''}
           ${lesson.zoomId ? `<p>ID конференции: ${lesson.zoomId}</p>` : ''}
@@ -574,6 +586,27 @@ document.addEventListener('DOMContentLoaded', function () {
     
         card.innerHTML = cardContent;
         container.appendChild(card);
+        }
+      }
+
+        // Рендер архива
+        const pastContainer = document.getElementById('student-past-lessons');
+        pastContainer.innerHTML = '';
+        if (past.length === 0) {
+          pastContainer.innerHTML = '<p>Архив пуст</p>';
+        } else {
+          past.forEach(lesson => {
+            const item = document.createElement('div');
+            item.className = 'past-lesson-item';
+            item.innerHTML = `
+              <div class="lesson-time">${lesson.date} в ${lesson.time || 'не указано'}</div>
+              ${lesson.zoomLink ? `<div><a href="${lesson.zoomLink}" target="_blank">Zoom</a></div>` : ''}
+              ${lesson.homework?.fileName ? `<div>ДЗ: ${lesson.homework.fileName}</div>` : ''}
+              ${lesson.cancellation?.cancelled ? `<div style="color:red;">Отменено: ${lesson.cancellation.reason || ''}</div>` : ''}
+            `;
+            pastContainer.appendChild(item);
+          });
+        }
       }
     
       // Обработчики кнопок отказа
@@ -735,6 +768,34 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error('Ошибка загрузки материалов:', error);
       container.innerHTML = '<p>Ошибка загрузки материалов</p>';
     }
+  }
+
+  async function renderTeacherPastLessons() {
+    const container = document.getElementById('teacher-past-lessons');
+    container.innerHTML = '<p>Загрузка...</p>';
+    
+    const allLessons = await fetchAllLessons();
+    const past = allLessons.filter(l => isPastLesson(l))
+                           .sort((a,b) => parseDate(b.date) - parseDate(a.date));
+    
+    container.innerHTML = '';
+    if (past.length === 0) {
+      container.innerHTML = '<p>Нет прошедших занятий</p>';
+      return;
+    }
+    
+    past.forEach(lesson => {
+      const student = allStudents.find(s => s.id === lesson.studentId);
+      const div = document.createElement('div');
+      div.className = 'past-lesson-item';
+      div.innerHTML = `
+        <div class="lesson-time"><strong>${student?.fullName || 'Ученик'}</strong> — ${lesson.date} в ${lesson.time || 'не указано'}</div>
+        ${lesson.zoomLink ? `<div><a href="${lesson.zoomLink}" target="_blank">Zoom</a></div>` : ''}
+        ${lesson.homework?.fileName ? `<div>ДЗ: ${lesson.homework.fileName}</div>` : ''}
+        ${lesson.cancellation?.cancelled ? `<div style="color:red;">Отменено учеником</div>` : ''}
+      `;
+      container.appendChild(div);
+    });
   }
 
   async function deleteMaterial(materialId) {
