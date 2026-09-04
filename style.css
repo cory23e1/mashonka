@@ -1,4 +1,11 @@
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Comic Sans MS', sans-serif; }
+@font-face {
+  font-family: 'Chetty'; /* Имя шрифта */
+  src: url('/fonts/chetty.ttf') format('ttf'); /* Путь к файлу и формат */
+  font-weight: 400; /* Насыщенность (400 — normal, 700 — bold) */
+  font-style: normal; /* Нормальное начертание */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Chetty', sans-serif; }
     body { background: #f0f2f5; }
     .hidden { display: none !important; }
 
